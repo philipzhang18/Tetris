@@ -330,8 +330,8 @@ class Game:
             
             # Increase level every 10 lines
             self.level = self.lines_cleared // 10 + 1
-            # Increase speed with level (but cap it)
-            self.fall_speed = max(50, 500 - (self.level - 1) * 50)
+            # Increase speed with level (but cap it) - slower increase for better gameplay
+            self.fall_speed = max(50, 500 - (self.level - 1) * 25)
         
         return len(lines_to_clear)
     
@@ -363,6 +363,31 @@ class Game:
                 self.play_sound(self.game_over_sound)
                 
         return False
+    
+    def rotate_piece(self):
+        """Rotate the current piece"""
+        if self.game_over or self.paused:
+            return
+            
+        original_rotation = self.current_piece.rotation
+        self.current_piece.rotate()
+        
+        # If rotation causes collision, try wall kicks
+        if not self.valid_position():
+            # Try moving left
+            if self.valid_position(x=self.current_piece.x - 1):
+                self.current_piece.x -= 1
+            # Try moving right
+            elif self.valid_position(x=self.current_piece.x + 1):
+                self.current_piece.x += 1
+            # Try moving up
+            elif self.valid_position(y=self.current_piece.y - 1):
+                self.current_piece.y -= 1
+            else:
+                # Revert rotation if no valid position found
+                self.current_piece.rotation = original_rotation
+        else:
+            self.play_sound(self.rotate_sound)
     
     def rotate_piece(self):
         """Rotate the current piece"""
